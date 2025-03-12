@@ -18,6 +18,9 @@ namespace MagicVilla_VillaAPI.Controllers
         protected APIResponse _response;
         private readonly IVillaRepository _dbVilla;
         private readonly IMapper _mapper;
+
+
+
         public VillaAPIController(IVillaRepository dbVilla, IMapper mapper)
         {
             _dbVilla = dbVilla;
@@ -33,7 +36,9 @@ namespace MagicVilla_VillaAPI.Controllers
         {
             try
             {
+                //
                 IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync();
+
                 _response.Result = _mapper.Map<List<VillaDTO>>(villaList);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -44,7 +49,6 @@ namespace MagicVilla_VillaAPI.Controllers
                 _response.ErrorMessages = new List<string>() { ex.Message };
             }
             return _response;
-
         }
 
 
@@ -63,21 +67,26 @@ namespace MagicVilla_VillaAPI.Controllers
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
+
+
                 var villa = await _dbVilla.GetAsync(u => u.Id == id);
+
+
                 if (villa == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
+
                 _response.Result = _mapper.Map<VillaDTO>(villa);
                 _response.StatusCode = HttpStatusCode.OK;
+
                 return Ok(_response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessages
-                     = new List<string>() { ex.ToString() };
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
             return _response;
         }
@@ -98,7 +107,7 @@ namespace MagicVilla_VillaAPI.Controllers
                 //}
                 if (await _dbVilla.GetAsync(u => u.Name.ToLower() == createDTO.Name.ToLower()) != null)
                 {
-                    ModelState.AddModelError("CustomError", "Villa already Exists!");
+                    ModelState.AddModelError("ErrorMessages", "Villa already Exists!");
                     return BadRequest(ModelState);
                 }
 
@@ -130,8 +139,7 @@ namespace MagicVilla_VillaAPI.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessages
-                     = new List<string>() { ex.ToString() };
+                _response.ErrorMessages = new List<string>() { ex.ToString() };
             }
             return _response;
         }
@@ -150,12 +158,16 @@ namespace MagicVilla_VillaAPI.Controllers
                 {
                     return BadRequest();
                 }
+
+
                 var villa = await _dbVilla.GetAsync(u => u.Id == id);
                 if (villa == null)
                 {
                     return NotFound();
                 }
                 await _dbVilla.RemoveAsync(villa);
+
+
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
                 return Ok(_response);
@@ -185,8 +197,8 @@ namespace MagicVilla_VillaAPI.Controllers
                 }
 
                 Villa model = _mapper.Map<Villa>(updateDTO);
-
                 await _dbVilla.UpdateAsync(model);
+
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
                 return Ok(_response);
@@ -217,17 +229,18 @@ namespace MagicVilla_VillaAPI.Controllers
 
 
             VillaUpdateDTO villaDTO = _mapper.Map<VillaUpdateDTO>(villa);
-
-           
             patchDTO.ApplyTo(villaDTO, ModelState);
             if (villa == null)
             {
                 return NotFound();
             }
 
-            Villa model = _mapper.Map<Villa>(villaDTO);
 
+
+            Villa model = _mapper.Map<Villa>(villaDTO);
             await _dbVilla.UpdateAsync(model);
+
+
 
             if (!ModelState.IsValid)
             {
